@@ -55,17 +55,21 @@ class Themes{
      * @return Theme
      */
     public function set($themeName){
+        \Log::info('theme name:'.$themeName);
         if($this->exists($themeName)){
+            \Log::info('exists theme name:'.$themeName);
             $theme = $this->find($themeName);
         } else {
+            \Log::info('not exists theme name:'.$themeName);
             $theme = new Theme($themeName);
         }
 
         $this->activeTheme = $theme;
 
+
         // Get theme view paths
         $paths = $theme->getViewPaths();
-
+        /*\Log::info('this active theme view path:'.$paths);*/
         // fall-back to default paths (set in views.php config file)
         foreach ($this->laravelViewsPath as $path)
             if(!in_array($path, $paths))

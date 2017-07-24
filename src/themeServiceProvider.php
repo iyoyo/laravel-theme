@@ -21,7 +21,7 @@ class themeServiceProvider extends ServiceProvider {
 		|--------------------------------------------------------------------------*/
 
         $this->app->singleton('view.finder', function($app) {
-            return new \iBrand\LaravelTheme\themeViewFinder(
+            return new themeViewFinder(
                 $app['files'],
                 $app['config']['view.paths'],
                 null
