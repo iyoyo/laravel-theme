@@ -28,6 +28,5 @@
             "iBrand\\laravelTheme\\" : "src/",
             "iBrand\\laravelTheme\\Tests\\" : "tests/"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }
