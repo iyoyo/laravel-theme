@@ -1,11 +1,10 @@
-<?php namespace iBrand\laravelTheme;
+<?php namespace iBrand\LaravelTheme;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Blade;
 
 class themeServiceProvider extends ServiceProvider {
-
 
     public function register(){
 
@@ -18,51 +17,35 @@ class themeServiceProvider extends ServiceProvider {
 		});
 
 		/*--------------------------------------------------------------------------
-		| Is package enabled?
+		| Replace FileViewFinder
 		|--------------------------------------------------------------------------*/
 
-		if (!Config::get('themes.enabled', true))
-			return;
+        $this->app->singleton('view.finder', function($app) {
+            return new \iBrand\LaravelTheme\themeViewFinder(
+                $app['files'],
+                $app['config']['view.paths'],
+                null
+            );
+        });
 
 		/*--------------------------------------------------------------------------
-		| Extend FileViewFinder
+		| Register helpers.php functions
 		|--------------------------------------------------------------------------*/
 
-		$this->app->singleton('view.finder', function($app)
-		{
-			$paths = $app['config']['view.paths'];
-			return new \igaster\laravelTheme\themeViewFinder($app['files'], $paths, null, $app['igaster.themes']);
-		});
+        require_once 'Helpers/helpers.php';
 
 		/*--------------------------------------------------------------------------
 		| Initialize Themes
 		|--------------------------------------------------------------------------*/
 
-		$Themes = $this->app->make('igaster.themes');
+		$themes = $this->app->make('igaster.themes');
+        $themes->scanThemes();
 
 		/*--------------------------------------------------------------------------
-		|   Load Themes from theme.php configuration file
+		| Activate default theme
 		|--------------------------------------------------------------------------*/
-
-		if (Config::has('themes')){
-			foreach (Config::get('themes.themes') as $themeName => $options) {
-				$assetPath = null;
-				$viewsPath = null;
-				$extends = null;
-
-				if(is_array($options)){
-					if(array_key_exists('asset-path', $options)) $assetPath = $options['asset-path'];
-					if(array_key_exists('views-path', $options)) $viewsPath = $options['views-path'];
-					if(array_key_exists('extends', $options)) $extends = $options['extends'];
-				} else {
-					$themeName = $options;
-				}
-				$Themes->add(new Theme($themeName, $assetPath, $viewsPath), $extends);
-			}
-
-			if (!$Themes->activeTheme)
-				$Themes->set(Config::get('themes.active'));
-		}
+		if (!$themes->current() && \Config::get('themes.default'))
+			$themes->set(\Config::get('themes.default'));
     }
 
 	public function boot(){
@@ -72,9 +55,31 @@ class themeServiceProvider extends ServiceProvider {
 		|--------------------------------------------------------------------------*/
 
 		$this->publishes([
-			__DIR__.'/config.php' => config_path('themes.php'),
-		]);
+			__DIR__.'/Config/themes.php' => config_path('themes.php'),
+		], 'laravel-theme');
 
+		/*--------------------------------------------------------------------------
+		| Register Console Commands
+		|--------------------------------------------------------------------------*/
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \iBrand\LaravelTheme\Commands\listThemes::class,
+                \iBrand\LaravelTheme\Commands\createTheme::class,
+                \iBrand\LaravelTheme\Commands\removeTheme::class,
+                \iBrand\LaravelTheme\Commands\createPackage::class,
+                \iBrand\LaravelTheme\Commands\installPackage::class,
+                \iBrand\LaravelTheme\Commands\refreshCache::class,
+            ]);
+        }
+
+		/*--------------------------------------------------------------------------
+		| Register custom Blade Directives
+		|--------------------------------------------------------------------------*/
+
+		$this->registerBladeDirectives();
+	}
+
+	protected function registerBladeDirectives(){
 		/*--------------------------------------------------------------------------
 		| Extend Blade to support Orcherstra\Asset (Asset Managment)
 		|

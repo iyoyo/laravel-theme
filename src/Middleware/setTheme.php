@@ -1,4 +1,4 @@
-<?php namespace iBrand\laravelTheme\Middleware;
+<?php namespace iBrand\LaravelTheme\Middleware;
 
 use Closure;
 

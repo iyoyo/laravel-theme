@@ -1,4 +1,4 @@
-<?php namespace iBrand\laravelTheme\Facades;
+<?php namespace iBrand\LaravelTheme\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
