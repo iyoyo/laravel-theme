@@ -55,12 +55,9 @@ class Themes{
      * @return Theme
      */
     public function set($themeName){
-        \Log::info('theme name:'.$themeName);
         if($this->exists($themeName)){
-            \Log::info('exists theme name:'.$themeName);
             $theme = $this->find($themeName);
         } else {
-            \Log::info('not exists theme name:'.$themeName);
             $theme = new Theme($themeName);
         }
 
